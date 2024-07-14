@@ -18,85 +18,107 @@ class ViewAppointmentScreen extends GetView<ViewAppointmentController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Text("View Appointment", style: kDefaultTextStyle.copyWith(fontSize: 18)),
-        centerTitle: true,
-        leading: InkWell(onTap: () => Get.back(), child: const Icon(Icons.arrow_back_ios, color: Colors.white)),
-      ),
-      body: Stack(
-        children: [
-          const SizedBox(
-            width: double.infinity,
-            height: double.infinity,
-            child: ScaffoldCustomPaint(),
-          ),
-          SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Image.asset('assets/images/img ellipse 1.png', colorBlendMode: BlendMode.srcIn, color: Colors.white24),
-                ),
-                const SizedBox(height: 30),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 22),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppTextFormField(title: "Name", controller: TextEditingController(text: appointment.name), enabled: false),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(child: AppTextFormField(title: "Date of Birth", controller: TextEditingController(text: appointment.dob), enabled: false)),
-                          const SizedBox(width: 22),
-                          Expanded(
-                            child: AppDropdownField(
-                              title: "Gender",
-                              items: [appointment.gender],
-                              value: appointment.gender,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      AppDropdownField(
-                        title: "Purpose",
-                        items: [appointment.purpose],
-                        value: appointment.purpose,
-                      ),
-                      SizedBox(height: Get.height * .3),
-                      AppButton(
-                        buttonName: 'Edit Details',
-                        borderColor: Colors.green,
-                        buttonColor: Colors.transparent,
-                        onPressed: () {
-                          UpdateAppointmentController controller = Get.put(UpdateAppointmentController());
-                          controller.nameController.text = appointment.name;
-                          controller.dobController.text = appointment.dob;
-                          controller.selectedGender = appointment.gender;
-                          controller.selectedPurpose = appointment.purpose;
-                          Get.toNamed(UpdateAppointmentScreen.route, arguments: {'appointment': appointment});
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      AppButton(
-                        buttonName: 'Delete Appointment',
-                        buttonNameColor: Colors.red,
-                        buttonColor: Colors.transparent,
-                        onPressed: () => controller.deleteAppointment(id: appointment.id!),
-                      ),
-                      const SizedBox(height: 20),
-                    ],
-                  ),
-                )
-              ],
+    return WillPopScope(
+      onWillPop: () async {
+        controller.isNavigatedWithDeepLink = false;
+        Get.back();
+        return true;
+      },
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          title: Text("View Appointment", style: kDefaultTextStyle.copyWith(fontSize: 18)),
+          centerTitle: true,
+          leading: InkWell(onTap: () => Get.back(), child: const Icon(Icons.arrow_back_ios, color: Colors.white)),
+          actions: controller.isNavigatedWithDeepLink
+              ? []
+              : [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: InkWell(onTap: () => controller.shareAppointment(appointment: appointment), child: const Icon(Icons.share, color: Colors.white)),
+                  )
+                ],
+        ),
+        body: Stack(
+          children: [
+            const SizedBox(
+              width: double.infinity,
+              height: double.infinity,
+              child: ScaffoldCustomPaint(),
             ),
-          )
-        ],
+            SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Image.asset('assets/images/img ellipse 1.png', colorBlendMode: BlendMode.srcIn, color: Colors.white24),
+                  ),
+                  const SizedBox(height: 30),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 22),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AppTextFormField(title: "Name", controller: controller.nameController, enabled: false),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(child: AppTextFormField(title: "Date of Birth", controller: controller.dobController, enabled: false)),
+                            const SizedBox(width: 22),
+                            Expanded(
+                              child: AppDropdownField(
+                                title: "Gender",
+                                items: [appointment.gender],
+                                value: controller.selectedGender,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        AppDropdownField(
+                          title: "Purpose",
+                          items: [appointment.purpose],
+                          value: controller.selectedPurpose,
+                        ),
+                        SizedBox(height: Get.height * .3),
+                        if (!controller.isNavigatedWithDeepLink)
+                          AppButton(
+                            buttonName: 'Edit Details',
+                            borderColor: Colors.green,
+                            buttonColor: Colors.transparent,
+                            onPressed: () {
+                              if (controller.isNavigatedWithDeepLink) {
+                                return;
+                              }
+                              UpdateAppointmentController updateAppointmentController = Get.put(UpdateAppointmentController());
+                              updateAppointmentController.nameController.text = appointment.name;
+                              updateAppointmentController.dobController.text = appointment.dob;
+                              updateAppointmentController.selectedGender = appointment.gender;
+                              updateAppointmentController.selectedPurpose = appointment.purpose;
+                              Get.toNamed(UpdateAppointmentScreen.route, arguments: {'appointment': appointment});
+                            },
+                          ),
+                        const SizedBox(height: 20),
+                        if (!controller.isNavigatedWithDeepLink)
+                          AppButton(
+                            buttonName: 'Delete Appointment',
+                            buttonNameColor: Colors.red,
+                            buttonColor: Colors.transparent,
+                            onPressed: () {
+                              controller.deleteAppointment(id: appointment.id!);
+                            },
+                          ),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

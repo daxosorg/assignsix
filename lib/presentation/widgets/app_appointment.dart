@@ -1,4 +1,5 @@
 import 'package:assignsix/data/models/appointment_model.dart';
+import 'package:assignsix/presentation/controllers/view_appointment/view_appointment_controller.dart';
 import 'package:assignsix/presentation/pages/view_appointment/view_appointment_screen.dart';
 import 'package:assignsix/utils/constants/app_constants.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +14,14 @@ class AppAppointment extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Get.toNamed(ViewAppointmentScreen.route, arguments: {'apointment': appointment}),
+      onTap: () {
+        ViewAppointmentController controller = Get.put(ViewAppointmentController());
+        controller.nameController.text = appointment.name;
+        controller.dobController.text = appointment.dob;
+        controller.selectedGender = appointment.gender;
+        controller.selectedPurpose = appointment.purpose;
+        Get.toNamed(ViewAppointmentScreen.route, arguments: {'apointment': appointment});
+      },
       child: Container(
         height: 54,
         width: double.infinity,
